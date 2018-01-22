@@ -19,6 +19,10 @@ const LogOutButton = styled.button`
   padding: 1em;
   border: none;
   background-color: white;
+  &:hover {
+    background-color: red;
+    color: white;
+  }
 `;
 
 const NickName = styled.a`
