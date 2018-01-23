@@ -5,6 +5,8 @@ import LoginScreen from './LoginScreen';
 import ArticleListScreen from './ArticleListScreen';
 import AccountScreen from './AccountScreen';
 import ArticleScreen from './ArticleScreen';
+import NewArticleScreen from './NewArticleScreen';
+
 
 export default class BBS extends Component {
   state = {
@@ -108,8 +110,23 @@ export default class BBS extends Component {
       page: 'article'
     })
   }
-
-
+  pageToNewArticle = () => {
+    this.setState({
+      page: 'new-article'
+    });
+  }
+  // 새글 저장
+  saveArticle = async (article) => {
+    console.log(article);
+    const p1 = firebase.database().ref(`articles`).push({
+      createdAt: firebase.database.ServerValue.TIMESTAMP,
+      title: article.title,
+      uid: this.state.uid
+    })
+    const p2 = firebase.database().ref(`contents/${p1.key}`).set(article.content);
+    await Promise.all([p1, p2]);
+    this.viewArticle(p1.key);
+  }
 
   render() {
     const { nickName, uid, articles, currentArticle } = this.state;
@@ -120,20 +137,26 @@ export default class BBS extends Component {
         ? <LoginScreen />
         : this.state.page === 'list'
         ? <ArticleListScreen
-        onNickNameClick={ this.pageToAccount }
-        nickName={ nickName || uid }
-        articleArr={ articles }
-        onArticleClick={ this.viewArticle }/>
+            onNickNameClick={ this.pageToAccount }
+            nickName={ nickName || uid }
+            articleArr={ articles }
+            onArticleClick={ this.viewArticle }
+            onNewArticleClick={ this.pageToNewArticle }
+          />
         : this.state.page === 'account'
         ? <AccountScreen
-        onNickNameClick={ this.pageToAccount }
-        nickName={ nickName || uid }
-        onNickNameSubmit={ this.saveNickName } />
+            onNickNameClick={ this.pageToAccount }
+            nickName={ nickName || uid }
+            onNickNameSubmit={ this.saveNickName }
+          />
         : this.state.page === 'article'
         ? <ArticleScreen
-          { ...currentArticle }
-          onNickNameClick={this.pageToAccount}
-          nickName={nickName || uid} />
+            { ...currentArticle }
+            onNickNameClick={this.pageToAccount}
+            nickName={nickName || uid}
+          />
+        : this.state.page === 'new-article'
+        ? <NewArticleScreen onFormSubmit={ this.saveArticle }/>
         : null
       }
       </div>

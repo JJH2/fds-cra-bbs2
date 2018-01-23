@@ -13,11 +13,17 @@ const ArticleItemRow = styled(Table.Row)`
 `;
 
 export default class ArticleListScreen extends Component {
+
+  handleNewArticleClick = () => {
+    this.props.onNewArticleClick();
+  }
+
   render() {
     const { nickName, onNickNameClick, articleArr, onArticleClick} = this.props;
     return (
       <div>
         <NavBar nickName={nickName} onNickNameClick={onNickNameClick} />
+        <button onClick={this.handleNewArticleClick}>새 글</button>
         <Table padded='very'>
           <Table.Header>
             <Table.Row>
@@ -36,7 +42,9 @@ export default class ArticleListScreen extends Component {
                     <Table.Cell>{moment(createdAt).locale('ko').fromNow()}</Table.Cell>
                   </ArticleItemRow>
                 ))
-                : '게시글이 없습니다.'
+                : <Table.Row>
+                    <Table.Cell>게시글이 없습니다.</Table.Cell>
+                  </Table.Row>
 
             }
           </Table.Body>
