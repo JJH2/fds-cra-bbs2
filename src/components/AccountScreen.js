@@ -16,7 +16,7 @@ export default class AccountScreen extends Component {
       <Wrap>
         <NavBar nickName={nickName} onNickNameClick={onNickNameClick} />
         <form action="" onSubmit= { this.handleSubmit }>
-          <input type="text" name="nickName"/>
+          <input type="text" name="nickName" placeholder={nickName}/>
           <button type="submit">저장</button>
         </form>
 
