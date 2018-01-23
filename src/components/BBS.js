@@ -32,6 +32,7 @@ export default class BBS extends Component {
           uid: user.uid,
           nickName: snapshot.val()
         });
+        this.fetchArticles();
       } else {
         this.setState({
           page: 'login'
@@ -49,8 +50,51 @@ export default class BBS extends Component {
     })
   }
 
+  fetchArticles = async () => {
+    const snapshot = await firebase.database().ref(`articles`).once('value');
+    const articlesObj = snapshot.val();
+    if (articlesObj == null) {
+      this.setState({
+        articles: null
+      })
+    } else {
+      const articles = Object.entries(articlesObj).map(([articleId, articleItem]) => {
+        return {
+          articleId,
+          ...articleItem
+        }
+      });
+      // const uidArr = articles.map(articles => articles.uid)
+      const uidSet = new Set(articles.map(({uid}) => uid));
+      const uidObj = {};
+      const ps = Array.from(uidSet).map(async uid => {
+        const snapshot = await firebase.database().ref(`users/${uid}/nickName`).once('value');
+        const nickName = snapshot.val();
+        return [uid, nickName];
+      })
+      const pairArr = await Promise.all(ps);
+      for (const [uid, nickName] of pairArr) {
+        uidObj[uid] = nickName;
+      }
+
+      console.log(uidObj);
+      // for (const uid of uidArr) {
+      //   const nickNameSnapshot = await firebase.database().ref(`users/${uid}/nickName`).once('value');
+      //   const nickName = nickNameSnapshot.val()
+      //   uidObj[uid] = nickName;
+      // }
+      articles.forEach(article => {
+        article.author = uidObj[article.uid];
+      })
+      this.setState({
+        articles
+      })
+    }
+  }
+
+
   render() {
-    const { nickName, uid } = this.state;
+    const { nickName, uid, articles } = this.state;
     return (
       <div>
       {
@@ -59,7 +103,8 @@ export default class BBS extends Component {
         : this.state.page === 'list'
         ? <ArticleListScreen
         onNickNameClick={ this.pageToAccount }
-        nickName={ nickName || uid } />
+        nickName={ nickName || uid }
+        articleArr={articles} />
         : this.state.page === 'account'
         ? <AccountScreen
         onNickNameClick={ this.pageToAccount }
